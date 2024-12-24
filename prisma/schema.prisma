@@ -1,0 +1,74 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")  
+  directUrl = env("DIRECT_URL")     
+  relationMode = "prisma"
+}
+
+// Student Model
+model Student {
+  id         Int      @id @default(autoincrement())
+  name       String
+  email      String   @unique
+  cohort     String  
+  dateJoined DateTime @default(now())
+  lastLogin  DateTime?
+  status     String   
+  image      String? 
+  class      Class?   @relation(fields: [classId], references: [id]) 
+  classId    Int?     
+  year       Year?    @relation(fields: [yearId], references: [id]) 
+  yearId     Int?    
+  courses    Course[] @relation("StudentCourses")
+}
+
+// Teacher Model
+model Teacher {
+  id       Int      @id @default(autoincrement())
+  name     String
+  email    String   @unique
+  image    String?  
+  courses  Course[] @relation("TeacherCourses") 
+}
+
+// Course Model
+model Course {
+  id          Int       @id @default(autoincrement())
+  courseName  String    
+  description String?
+  students    Student[] @relation("StudentCourses") 
+  teachers    Teacher[] @relation("TeacherCourses") 
+  class       Class?    @relation(fields: [classId], references: [id]) 
+  classId     Int?      
+  year        Year?     @relation(fields: [yearId], references: [id]) 
+  yearId      Int?      
+}
+
+// Class Model
+model Class {
+  id       Int       @id @default(autoincrement())
+  className String   @unique 
+  yearId    Int
+  year      Year    @relation(fields: [yearId], references: [id])
+  students  Student[] 
+  courses   Course[] 
+}
+
+// Year Model
+model Year {
+  id       Int       @id @default(autoincrement())
+  yearName String    @unique 
+  classes  Class[]
+  students Student[] 
+  courses  Course[] 
+}
